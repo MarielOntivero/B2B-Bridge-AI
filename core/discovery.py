@@ -89,8 +89,19 @@ def search_companies_gleif(name, country=None, limit=10):
             {
                 "name": entity["legalName"]["name"],
                 "city": address.get("city"),
+                "region": address.get("region"),
                 "country": address.get("country"),
+                "postal_code": address.get("postalCode"),
+                "address": address.get("addressLines", []),
                 "lei": attributes["lei"],
+                "registered_as": entity.get("registeredAs"),
+                "registered_at": entity.get("registeredAt", {}).get("id"),
+                "jurisdiction": entity.get("jurisdiction"),
+                "category": entity.get("category"),
+                "legal_form": entity.get("legalForm", {}).get("id"),
+                "status": entity.get("status"),
+                "creation_date": entity.get("creationDate"),
+                "corporate_events": entity.get("eventGroups", []),
                 "source": "GLEIF",
             }
         )
