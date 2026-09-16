@@ -1,0 +1,34 @@
+[
+  {
+    "name": "RoboFactory GmbH",
+    "fictional": true,
+    "country": "Germany",
+    "location": "Germany",
+    "industry": "Industrial Automation",
+    "products": [
+      "Industrial robots",
+      "Robotic automation systems",
+      "Machine vision systems"
+    ],
+    "technologies": [
+      "Industrial robotics",
+      "Machine vision",
+      "Automation",
+      "AI-assisted quality inspection"
+    ],
+    "markets": [
+      "Germany",
+      "Europe"
+    ],
+    "needs": [
+      "Automation software",
+      "AI solutions",
+      "Production optimization"
+    ],
+    "signals": [
+      "Expansion of automated production",
+      "Increasing demand for intelligent manufacturing"
+    ],
+    "sources": []
+  }
+]
