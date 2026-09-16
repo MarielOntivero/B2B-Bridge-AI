@@ -11,6 +11,8 @@ def analyze_opportunity(company, candidate):
     client = OpenAI(
         base_url="https://integrate.api.nvidia.com/v1",
         api_key=os.environ["NVIDIA_API_KEY"],
+        timeout=45.0,
+        max_retries=0,
     )
 
     prompt = f"""
@@ -35,6 +37,7 @@ Important rules:
 - Identify which provided facts support the opportunity.
 - Look for complementary products, needs, markets and technologies.
 - If important information is missing, say so explicitly.
+- Keep the analysis concise.
 
 Return ONLY valid JSON.
 
@@ -57,7 +60,7 @@ Use exactly this structure:
 """
 
     response = client.chat.completions.create(
-        model="deepseek-ai/deepseek-v4-flash-0731",
+        model="nvidia/nemotron-3.5-lightning-30b-a3b",
         messages=[
             {
                 "role": "user",
@@ -66,6 +69,11 @@ Use exactly this structure:
         ],
         temperature=0.2,
         max_tokens=1000,
+        extra_body={
+            "chat_template_kwargs": {
+                "enable_thinking": False
+            }
+        },
     )
 
     content = response.choices[0].message.content
@@ -73,4 +81,15 @@ Use exactly this structure:
     if not content:
         raise ValueError("NVIDIA returned no final response.")
 
-    return json.loads(content)
+    content = content.strip()
+
+    if content.startswith("```json"):
+        content = content[7:]
+
+    if content.startswith("```"):
+        content = content[3:]
+
+    if content.endswith("```"):
+        content = content[:-3]
+
+    return json.loads(content.strip())

@@ -1,79 +1,107 @@
+import json
+import os
+import sys
+
 import gradio as gr
 
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-companies = [
-    {
-        "name": "RoboFactory GmbH",
-        "industry": "Industrial Automation",
-        "needs": "Robotics, automation and machine vision",
-        "market": "Germany",
-    },
-    {
-        "name": "GreenGrid Energy",
-        "industry": "Energy Technology",
-        "needs": "Industrial energy management and automation",
-        "market": "Europe",
-    },
-    {
-        "name": "MedTech Solutions",
-        "industry": "Medical Technology",
-        "needs": "AI, automation and intelligent manufacturing",
-        "market": "Germany",
-    },
-]
+from core.ai_analysis import analyze_opportunity
 
 
-def find_matches(product, industry, market):
-    results = []
+def analyze_b2b_opportunity(
+    company_a_name,
+    company_a_products,
+    company_a_industry,
+    company_a_country,
+    company_b_name,
+):
+    company_a = {
+        "name": company_a_name,
+        "products": [company_a_products],
+        "industry": company_a_industry,
+        "country": company_a_country,
+    }
 
-    for company in companies:
-        score = 50
-        reasons = []
+    with open("data/companies.json", "r") as file:
+        companies = json.load(file)
 
-        if industry.lower() in company["industry"].lower():
-            score += 25
-            reasons.append("Strong industry fit")
+    candidate = companies[0]
 
-        if market.lower() in company["market"].lower():
-            score += 15
-            reasons.append("Geographic fit")
+    result = analyze_opportunity(company_a, candidate)
 
-        if not reasons:
-            reasons.append("Potential strategic fit")
+    evidence = "\n".join(
+        f"- {item}" for item in result.get("evidence", [])
+    )
 
-        score = min(score, 100)
+    reasons = "\n".join(
+        f"- {item}" for item in result.get("reasons", [])
+    )
 
-        results.append(
-            f"### {company['name']}\n"
-            f"*Match Score: {score}/100*\n\n"
-            f"*Industry:* {company['industry']}\n\n"
-            f"*Why this could be an opportunity:*\n"
-            f"- {', '.join(reasons)}\n\n"
-            f"*Potential need:* {company['needs']}\n"
-        )
+    risks = "\n".join(
+        f"- {item}" for item in result.get("risks", [])
+    )
 
-    return "\n\n---\n\n".join(results)
+    return f"""
+# Opportunity Score: {result.get("score", "N/A")}/100
+
+**AI Confidence:** {result.get("confidence", "N/A")}
+
+## Potential Opportunity
+
+{result.get("opportunity", "No analysis available.")}
+
+## Evidence
+
+{evidence}
+
+## Why this could be an opportunity
+
+{reasons}
+
+## Risks & Missing Information
+
+{risks}
+
+---
+
+*Analysis powered by NVIDIA NIM.*
+"""
 
 
 demo = gr.Interface(
-    fn=find_matches,
+    fn=analyze_b2b_opportunity,
     inputs=[
         gr.Textbox(
-            label="What does your company sell?",
-            placeholder="Example: Industrial automation software"
+            label="Company A",
+            placeholder="Example: My Automation Company",
         ),
         gr.Textbox(
-            label="Target industry",
-            placeholder="Example: Industrial Automation"
+            label="What does Company A sell?",
+            placeholder="Example: Industrial automation software",
         ),
         gr.Textbox(
-            label="Target market",
-            placeholder="Example: Germany"
+            label="Company A industry",
+            placeholder="Example: Industrial Automation",
+        ),
+        gr.Textbox(
+            label="Company A country",
+            placeholder="Example: Germany",
+        ),
+        gr.Textbox(
+            label="Company B",
+            value="RoboFactory GmbH",
+            interactive=False,
         ),
     ],
-    outputs=gr.Markdown(label="Potential B2B Opportunities"),
+    outputs=gr.Markdown(
+        label="B2B Opportunity Analysis"
+    ),
     title="B2B Bridge AI",
-    description="From thousands of companies to the few that matter.",
+    description=(
+        "From thousands of companies to the few that matter. "
+        "Analyze potential B2B opportunities using NVIDIA AI."
+    ),
 )
 
 
