@@ -180,3 +180,23 @@ def get_legal_form(legal_form_code):
         "country_code": attributes.get("countryCode"),
         "status": attributes.get("status"),
     }
+
+
+def enrich_company_identity(company):
+    """
+    Enrich one selected company with human-readable identity data.
+    """
+
+    enriched = company.copy()
+
+    legal_form_code = company.get("legal_form")
+
+    if legal_form_code:
+        legal_form = get_legal_form(legal_form_code)
+
+        if legal_form:
+            enriched["legal_form_name"] = legal_form.get("name")
+            enriched["legal_form_country"] = legal_form.get("country")
+            enriched["legal_form_status"] = legal_form.get("status")
+
+    return enriched
